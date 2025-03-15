@@ -1,0 +1,18 @@
+{
+  "name": "chscdn.github.io",
+  "version": "1.0.0",
+  "description": "Content Distributive Network utility of CHS using Node.js, Express, and EJS for helping interface level api connection for open developers",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "author": "WHITE LOTUS",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.20.2",
+    "dotenv": "^10.0.0",
+    "ejs": "^3.1.10",
+    "express": "^4.21.1",
+    "jsonfile": "^6.1.0"
+  }
+}
