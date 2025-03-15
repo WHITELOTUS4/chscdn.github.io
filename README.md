@@ -51,10 +51,11 @@ To start using CHSCDN, simply include the CDN link in your project and explore t
 
 ## Advanced Stack Technology 🖼️  
 ![JPEN](https://kidKrishkode.github.io/Streamline-Diagnosis.github.io/images/jpen.png)  
-The **JPEN stack** (JSON, Python, Embedded JavaScript, and Node.js) powers CHSCDN, ensuring seamless interaction with CHSAPI while providing a structured, scalable approach for developers.  
+The JPEN stack is a technology stack that combines the power of JSON, Python, Embedded JavaScript, and Node.js. JSON (J) is used for level data interchange and storage, providing a lightweight and flexible format for data exchange. Python (P) is used for mechine learning scripting, offering a robust and versatile language for building machine learning empower web applications. Embedded JavaScript (E) allows for dynamic client-side scripting, enabling interactive user experiences. Finally, Node.js (N) provides the runtime environment for executing JavaScript code on the server-side, enabling fast and scalable web development. Together, the JPEN stack enables developers to build scalable, and data driven or deep learning combined web applications.
 
 ## Developers 👨‍💻👩‍💻  
-- **CDN Architect & Developer**: Krishnendu Mitra  
+- **CDN Architect & Developer**: Krishnendu Mitra
+- **CDN Content Developer**: Souvik Kar
 - **API Optimization & Integration**: Saptarshi Pramanik  
 
 ## Contact Us 📬  
