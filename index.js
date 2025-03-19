@@ -1,9 +1,6 @@
 const express = require('express');
 const http = require('http');
 const path = require('path');
-const fs = require('fs');
-const querystring = require('querystring');
-// const ejs = require('ejs');
 const jsonfile = require('jsonfile');
 require('./public/App.test.js');
 require('dotenv').config();
@@ -20,15 +17,11 @@ class CDN{
 const app = express();
 let server = http.createServer(app);
 const PORT = process.env.PORT || 8080;
-const AppName = "Cavernous Hoax Scanner";
+const AppName = "Cavernous Hoax Scanner CDN";
 let cdn = new CDN(PORT);
 
-
-/*app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views'));*/
-
-app.use('/public',express.static(path.join(__dirname,'public')));
-
+app.use('/public', express.static(path.join(__dirname,'public')));
+app.use('/contents', express.static(path.join(__dirname,'contents')));
 
 app.use((req, res, next) => {
     try{
@@ -47,16 +40,34 @@ app.get('/index', (req, res) => {
     res.redirect('/');
 });
 
-app.get('/cdn/v1/css/style.min.css', (req, res) => {
-  res.status(200).sendFile(__dirname + '/public/v1/style.css');
+// Version 1.0 resource distribution code block
+app.get('/cdn/v1/css/chscdn.min.css', (req, res) => {
+    res.status(200).sendFile(__dirname + '/contents/v1/style.css');
 });
 
-app.get('/cdn/v1/js/script.js', (req, res) => {
-  res.status(200).sendFile(__dirname + '/public/v1/script.js');
+app.get('/cdn/v1/css/chscdn.css', (req, res) => {
+    res.redirect('/cdn/v1/css/chscdn.min.css');
+});
+
+app.get('/cdn/v1/js/chscdn.js', (req, res) => {
+    res.status(200).sendFile(__dirname + '/contents/v1/script.js');
+});
+
+// Version 2.0 resource distribution code block
+app.get('/cdn/v2/css/chscdn.min.css', (req, res) => {
+    res.status(200).sendFile(__dirname + '/contents/v2/style.css');
+});
+
+app.get('/cdn/v2/css/chscdn.css', (req, res) => {
+    res.redirect('/cdn/v2/css/chscdn.min.css');
+});
+
+app.get('/cdn/v2/js/chscdn.js', (req, res) => {
+    res.status(200).sendFile(__dirname + '/contents/v2/script.js');
 });
 
 app.get('*', (req, res) => {
-    res.status(404).json({error: 404, message: "Page not found on this url, check the source or report it"});
+    res.status(404).json({error: 404, message: "Resource not found on this url, check the source or report it"});
 });
 
 server.listen(PORT, (err) => {
