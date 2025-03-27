@@ -33,8 +33,8 @@ app.use((req, res, next) => {
             cdn.webLink = 'http://127.0.0.1:5000';
             cdn.apiLink = 'http://127.0.0.1:8000';
         }else{
-            cdn.webLink = 'https://chscdn.vercel.app';
-            cdn.webLink = 'https://chsapi.vercel.app';
+            cdn.webLink = 'https://chsweb.vercel.app';
+            cdn.apiLink = 'https://chsapi.vercel.app';
         }
         next();
     }catch(e){
