@@ -77,17 +77,9 @@ app.get('/varchar', async (req, res) => {
 
 app.get('/compiler', async (req, res) => {
     try{
-        const codefork = await jsonfile.readFile('./config/codefork.json');
-        res.status(200).json({
-            compiler: {
-                updateLineNumbers: compiler.updateLineNumbers.toString(),
-                ideDeploy: compiler.ideDeploy.toString(),
-                appointCode: compiler.appointCode.toString(),
-                jsCompiler: compiler.jsCompiler.toString(),
-                pyInterpreter: compiler.pyInterpreter.toString(),
-                codefork: codefork
-            }
-        });
+        await fetch(cdn.webLink+'/compiler').then(response => response.json()).then(data => {
+            res.status(200).json({compiler: data.compiler});
+        }).catch(e=>console.log(e));
     }catch(error){
         res.status(500).json({ error: 'Failed to load configuration', details: error.message });
     }
