@@ -1,0 +1,17 @@
+{
+    "name": "chscdn",
+    "version": "1.0.0",
+    "description": "Cavernous Hoax Scanner's Content Distributive Network utitlity provides version 1",
+    "main": "script.js",
+    "files": [
+        "script.js",
+        "style.css"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "https://chscdn.vercel.app/download/tgz/v1"
+    },
+    "dependencies": {},
+    "author": "WHITE LOTUS",
+    "license": "MIT"
+}

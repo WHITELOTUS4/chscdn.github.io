@@ -6,7 +6,11 @@ document.addEventListener("DOMContentLoaded",() => {
     if(!navigator.onLine){
         console.error("ERR_INTERNET_DISCONNECTED: Looks like you're not connected to the internet, Unable to establish connection with CHSAPI due to network issues.\n\nPlease verify your Wi-Fi or network connection is stable and try again.\n\n");
     }
-    developermode(1441);
+    
+    // Developer mode activate on localhost
+    if(window.location.host==''){
+        developermode(1441);
+    }
 });
 
 // CDN class with basics initialisation
@@ -37,12 +41,7 @@ CHSCDN.prototype.APICaller = function(values){
         }
         return responce;
     }else{
-        console.warn(`Structural_Exception: Please use required inputs structure to use chsapi\nBasic input structure: {
-            task: String,
-            media: Base64,
-            apikey: String | None,
-            from String | None
-        }\n\n`);
+        console.warn(`Structural_Exception: Please use required inputs structure to use chsapi\nfor understanding the basic structure of each api endpoint, must visit ${new URL('https://chsweb.vercel.app/docs?search=basemodel')}\n\tOR,\nwatch ${new URL('https://youtube.com/@whitelotus4')}\n\n`);
         return null;
     }
 }
