@@ -1,6 +1,9 @@
 const express = require('express');
 const http = require('http');
-const path = require('path');
+const fs = require("fs");
+const path = require("path");
+const archiver = require("archiver");
+const tar = require("tar");
 const jsonfile = require('jsonfile');
 const SYSTEM = require('./public/App.js');
 require('./public/App.test.js');
@@ -10,7 +13,7 @@ class CDN{
     constructor(port){
         this.active = true;
         this.port = port;
-        this.filename = path.basename(__filename);
+        this.latest = "v2";
         this.webLink = undefined;
         this.apiLink = undefined;
         this.appInfo = jsonfile.readFileSync('./public/manifest.json');
@@ -120,6 +123,53 @@ app.get('/docs', (req, res) => {
     res.redirect('/doc');
 });
 
+// Download zip archive folder for pip or vanilla download
+app.get("/download/zip/:version", (req, res) => {
+    const version = req.params.version=='latest'?cdn.latest:req.params.version;
+    const folderPath = path.join(__dirname, "contents", version);
+    if (!fs.existsSync(folderPath)) {
+        return res.status(404).json({ error: "Version not found" });
+    }
+    res.setHeader("Content-Disposition", `attachment; filename=chscdn@${version}.zip`);
+    res.setHeader("Content-Type", "application/zip");
+    const archive = archiver("zip", { zlib: { level: 9 } });
+    archive.pipe(res);
+    archive.directory(folderPath, false);
+    archive.finalize();
+});
+
+// Download tgz archive folder for npm
+app.get("/download/tgz/:version", async (req, res) => {
+    const version = req.params.version=='latest'?cdn.latest:req.params.version;
+    const folderPath = path.join(__dirname, "contents", version);
+    const tarFilePath = path.join(__dirname, `${version}.tgz`);
+    if (!fs.existsSync(folderPath)) {
+        return res.status(404).json({ error: "Version not found" });
+    }
+    await tar.c(
+        {
+            gzip: true,
+            file: tarFilePath,
+            cwd: folderPath,
+        },
+        fs.readdirSync(folderPath)
+    );
+    res.setHeader("Content-Disposition", `attachment; filename=chscdn@${version}.tgz`);
+    res.setHeader("Content-Type", "application/gzip");
+    res.sendFile(tarFilePath, (err) => {
+        if(err){
+            res.status(500).json({ error: "Failed to send file", message: err });
+        }
+        fs.unlinkSync(tarFilePath);
+    });
+});
+
+// Default download route to the zip download
+app.get("/download/:version", (req, res) => {
+    const version = req.params.version=='latest'?cdn.latest:req.params.version;
+    res.status(200).redirect(`/download/zip/${version}`);
+});
+
 app.get('*', (req, res) => {
     res.status(404).json({error: 404, message: "Resource not found on this url, check the source or report it"});
 });
@@ -130,3 +180,4 @@ server.listen(PORT, (err) => {
     console.info(`\thttp://localhost:${PORT}`);
     console.log("\n\x1b[32mNode web compiled!\x1b[0m \n");
 });
+
