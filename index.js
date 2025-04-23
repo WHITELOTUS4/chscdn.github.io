@@ -29,6 +29,7 @@ let system = new SYSTEM();
 
 app.use('/public', express.static(path.join(__dirname,'public')));
 app.use('/contents', express.static(path.join(__dirname,'contents')));
+app.use('/packets', express.static(path.join(__dirname,'packets')));
 
 app.use((req, res, next) => {
     try{
@@ -123,12 +124,12 @@ app.get('/docs', (req, res) => {
     res.redirect('/doc');
 });
 
-// Download zip archive folder for pip or vanilla download
+// Download zip archive folder
 app.get("/download/zip/:version", (req, res) => {
     const version = req.params.version=='latest'?cdn.latest:req.params.version;
     const folderPath = path.join(__dirname, "contents", version);
-    if (!fs.existsSync(folderPath)) {
-        return res.status(404).json({ error: "Version not found" });
+    if(!fs.existsSync(folderPath)){
+        return res.status(404).json({error: 404, message: "Version compress directory not found! Verify the download link or visit https://chsweb.vercel.app/docs"});
     }
     res.setHeader("Content-Disposition", `attachment; filename=chscdn@${version}.zip`);
     res.setHeader("Content-Type", "application/zip");
@@ -138,13 +139,13 @@ app.get("/download/zip/:version", (req, res) => {
     archive.finalize();
 });
 
-// Download tgz archive folder for npm
+// Download tgz archive folder
 app.get("/download/tgz/:version", async (req, res) => {
     const version = req.params.version=='latest'?cdn.latest:req.params.version;
     const folderPath = path.join(__dirname, "contents", version);
     const tarFilePath = path.join(__dirname, `${version}.tgz`);
     if (!fs.existsSync(folderPath)) {
-        return res.status(404).json({ error: "Version not found" });
+        return res.status(404).json({error: 404, message: "Version compress directory not found! Verify the download link or visit https://chsweb.vercel.app/docs"});
     }
     await tar.c(
         {
@@ -170,6 +171,41 @@ app.get("/download/:version", (req, res) => {
     res.status(200).redirect(`/download/zip/${version}`);
 });
 
+// Default install route to the package setup
+app.get("/install/:package/chscdn", async (req, res) => {
+    const package = req.params.package=='pip'?'pip':'npm';
+    const folderPath = path.join(__dirname, "packets", package);
+    if(!fs.existsSync(folderPath)){
+        return res.status(404).json({error: 404, message: "Package not found! Verify the installation link or visit https://chsweb.vercel.app/docs"});
+    }
+    if(package == 'npm'){
+        const tarFilePath = path.join(__dirname, `${package}.tgz`);
+        await tar.c(
+            {
+                gzip: true,
+                file: tarFilePath,
+                cwd: folderPath,
+            },
+            fs.readdirSync(folderPath)
+        );
+        res.setHeader("Content-Disposition", `attachment; filename=chscdn.tgz`);
+        res.setHeader("Content-Type", "application/gzip");
+        res.sendFile(tarFilePath, (err) => {
+            if(err){
+                res.status(500).json({ error: "Failed to send file", message: err });
+            }
+            fs.unlinkSync(tarFilePath);
+        });
+    }else{
+        res.setHeader("Content-Disposition", `attachment; filename=chscdn.zip`);
+        res.setHeader("Content-Type", "application/zip");
+        const archive = archiver("zip", { zlib: { level: 9 } });
+        archive.pipe(res);
+        archive.directory(folderPath, false);
+        archive.finalize();
+    }
+});
+
 app.get('*', (req, res) => {
     res.status(404).json({error: 404, message: "Resource not found on this url, check the source or report it"});
 });
@@ -181,3 +217,4 @@ server.listen(PORT, (err) => {
     console.log("\n\x1b[32mNode web compiled!\x1b[0m \n");
 });
 
+// https://chscdn.vercel.app/install/
