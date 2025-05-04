@@ -55,7 +55,7 @@ At first add our CDN (stylesheet, script) in your HTML file
 ```html
 <script src="https://chscdn.vercel.app/cdn/v1/js/chscdn.js" crossorigin="anonymous"></script>
 ```
-and then open a javascript file where you access our pre-written code for you, just copy past the following code for deepfake detection:
+and then open a javascript file where you access our pre-written codes, just copy past the following code for deepfake detection:
 ```js
 // Connect the CHSCDN plugin
 // Create an instance of the CHSCDN class
@@ -89,6 +89,29 @@ npm install https://chscdn.vercel.app/npm/install
 Install using PIP
 ```bash
 pip install https://chscdn.vercel.app/pip/install
+```
+then import the packegs on your code to use in your way:
+```js
+// Import chscdn using npm at first
+import React from 'react';
+import 'chscdn/style.css ';
+import { chscdn } from 'chscdn/script'; // Importing from the package  
+
+const App = () => {
+	// Create an instance of the chscdn class 
+	const cdnInstance = new chscdn();
+	/*....
+
+	use that pre-buid code as you want
+
+	....*/
+	return (
+		<>
+		</>
+	);
+};
+
+export default App;
 ```
 But if you think to download it in your system and use it, then it is also possible:
 ```bash
