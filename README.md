@@ -47,7 +47,54 @@ Together, we have built this **open-source CDN** to assist developers in utilizi
 4. **Enjoy Seamless Integration**: CHSCDN makes working with CHSAPI smooth and efficient.  
 
 ## Get Started 🚀  
-To start using CHSCDN, simply include the CDN link in your project and explore the built-in functions! Our documentation will guide you through every step, ensuring easy implementation.  
+To start using CHSCDN, simply include the CDN link in your project and explore the built-in functions! Our documentation will guide you through every step, ensuring easy implementation. but you can learn it from:
+At first add our CDN (stylesheet, script) in your HTML file
+```html
+<link href="https://chscdn.vercel.app/cdn/v1/css/chscdn.min.css" rel="stylesheet" crossorigin="anonymous"/>
+```
+```html
+<script src="https://chscdn.vercel.app/cdn/v1/js/chscdn.js" crossorigin="anonymous"></script>
+```
+and then open a javascript file where you access our pre-written code for you, just copy past the following code for deepfake detection:
+```js
+// Connect the CHSCDN plugin
+// Create an instance of the CHSCDN class
+let chscdn = new CHSCDN();
+
+// Define the local image path
+let image = 'C:/Users/Pictures/dp.png';
+
+// Convert the local image to a base64 string
+let base64_image = await chscdn.image2base64(image); // Alternative: image_to_base64
+
+// Set up API parameters
+let api_value = { task: 'deepfake detect', media: base64_image };
+
+// Receive the API response
+let response = await chscdn.APICaller(api_value);
+
+// Check for errors from the user side
+if(chscdn.error_detect(response, 'mute')){
+	console.error('Error occurred while calling CHS API!');
+}else{
+	// Display the result in the developer console
+	console.log(response?.result?.class);
+}
+```
+But if you work with any other enviroment like React Js or NEXT Js or Python then the above approch is not easy for you (application possible), so you can install our CHSCDN package on your system and then import our files to your code.
+Install using NPM
+```bash
+npm install https://chscdn.vercel.app/npm/install
+```
+Install using PIP
+```bash
+pip install https://chscdn.vercel.app/pip/install
+```
+But if you think to download it in your system and use it, then it is also possible:
+```bash
+curl -o ./chscdn/v1.zip "https://chscdn.vercel.app/download/zip/v1" && unzip -o ./chscdn/v1.zip -d ./chscdn/ && rm ./chscdn/v1.zip
+```
+Point to be noted that above all approches are more flexible which are not describe in just few words thats why please visit our Docs and Tutorial for more cleariness and easy to use.
 
 ## Advanced Stack Technology 🖼️  
 ![JPEN](https://kidKrishkode.github.io/Streamline-Diagnosis.github.io/images/jpen.png)  
