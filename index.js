@@ -17,6 +17,7 @@ class CDN{
         this.webLink = undefined;
         this.apiLink = undefined;
         this.appInfo = jsonfile.readFileSync('./public/manifest.json');
+        this.public_key = this.appInfo.icons[1].sizes.replace('x1500','')*1;
     }
 }
 
@@ -57,7 +58,10 @@ app.get('/', async (req, res) => {
         }).then(response => response.text()).then(html => {
             res.set("Content-Type", "text/html");
             res.send(html);
-        }).catch(e=>console.log(e));
+        }).catch((e) => {
+            console.log("New Error: "+e);
+            res.status(200).send("<h1 style='text-align: center; margin: 20% auto; color: #6e13aff2; font-family: sans-serif;'>Ahoy hoy User, CHSCDN greet you without any custome page!<h1>");
+        });
     }catch(e){
         const redirectUrl = new URL('https://chsweb.vercel.app/cdn');
         res.status(200).redirect(redirectUrl.href);
@@ -206,6 +210,36 @@ app.get("/install/:package/chscdn", async (req, res) => {
     }
 });
 
+// Key exchange route for secure communication
+app.get('/key_exchange', async (req, res) => {
+    let p = system.generateLargePrime();
+    let g = system.findSmallerPrime(p - Math.floor(Math.random()*100));
+    
+    let a = 7;
+    let b = 5;
+
+    if(req?.query){
+        a = req?.query?.a || a;
+    }
+
+    b = await system.get_choosen_one_of_api(system.isHosted(req)==true?'https://chsapi.vercel.app':'http://127.0.0.1:8000');
+
+    const A = Math.pow(g, a) % p;
+    const B = Math.pow(g, b) % p;
+
+    const k1 = Math.pow(B, a) % p;
+    const k2 = Math.pow(A, b) % p;
+
+    const [secret1, public1, secret2, public2] = system.key_pair_genrator(k1, k2);
+
+    let web = {secret: system.Encoder(String(secret1), String(cdn.public_key-59)), public: public2};
+    let api = {secret: system.Encoder(String(secret2), String(cdn.public_key-59)), public: public1};
+
+    await system.return_key_to_api(system.isHosted(req)==true?'https://chsapi.vercel.app':'http://127.0.0.1:8000',api);
+
+    res.status(200).json(web);
+});
+
 app.get('*', (req, res) => {
     res.status(404).json({error: 404, message: "Resource not found on this url, check the source or report it"});
 });
@@ -216,5 +250,3 @@ server.listen(PORT, (err) => {
     console.info(`\thttp://localhost:${PORT}`);
     console.log("\n\x1b[32mNode web compiled!\x1b[0m \n");
 });
-
-// https://chscdn.vercel.app/install/
