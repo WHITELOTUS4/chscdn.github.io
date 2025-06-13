@@ -235,7 +235,7 @@ app.get('/key_exchange', async (req, res) => {
     let web = {secret: system.Encoder(String(secret1), String(cdn.public_key-59)), public: public2};
     let api = {secret: system.Encoder(String(secret2), String(cdn.public_key-59)), public: public1};
 
-    await system.return_key_to_api(system.isHosted(req)==true?'https://chsapi.vercel.app':'http://127.0.0.1:8000',api);
+    //await system.return_key_to_api(system.isHosted(req)==true?'https://chsapi.vercel.app':'http://127.0.0.1:8000',api);
 
     res.status(200).json(web);
 });
