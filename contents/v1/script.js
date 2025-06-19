@@ -232,6 +232,26 @@ CHSCDN.prototype.handle_error = function(code){
     }
 }
 
+CHSCDN.prototype.error_detect = function(response, permite_to_speck){
+    if((response*1) - (response*1) == 0){
+        if(permite_to_speck!='mute'){
+            console.error(`APICallError:\nYou are hitting a unexpected error, when process the API response\nError pointer: ${(response*1)} \n\nPlease check out the error logs of CHS (${new URL('https://chsweb.vercel.app/docs?search=error%20log')}) for understand this better. \n\n`);
+        }
+        return true;
+    }else{
+        if(response?.result && response?.metadata && response?.network){
+            if(permite_to_speck!='mute'){
+                console.info('No error detected, You are good to go.\n');
+            }
+        }else{
+            if(permite_to_speck!='mute'){
+                console.warn('Response_Exception: Some parameters are missing on this response.\nPlease ensure that the provided response is not include any error or the sender is CHSAPI\n\n');
+            }
+        }
+        return false;
+    }
+}
+
 // Developermode function for activate/run cdn on localserver with localhost chsapi 
 function developermode(key){
     if((key*1) - (key*1) == 0){
