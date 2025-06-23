@@ -211,7 +211,7 @@ app.get("/download/:version", (req, res) => {
 //     }
 // });
 
-app.get("/install/:package/chscdn", async (req, res) => {
+app.get("/install/:package/chscdn.tgz", async (req, res) => {
     const package = req.params.package=='pip'?'pip':'npm';
     const folderPath = path.join(__dirname, "packets", package);
     if(!fs.existsSync(folderPath)){
