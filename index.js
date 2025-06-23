@@ -176,6 +176,41 @@ app.get("/download/:version", (req, res) => {
 });
 
 // Default install route to the package setup
+
+// app.get("/install/:package/chscdn", async (req, res) => {
+//     const package = req.params.package=='pip'?'pip':'npm';
+//     const folderPath = path.join(__dirname, "packets", package);
+//     if(!fs.existsSync(folderPath)){
+//         return res.status(404).json({error: 404, message: "Package not found! Verify the installation link or visit https://chsweb.vercel.app/docs"});
+//     }
+//     if(package == 'npm'){
+//         const tarFilePath = path.join(__dirname, `${package}.tgz`);
+//         await tar.c(
+//             {
+//                 gzip: true,
+//                 file: tarFilePath,
+//                 cwd: folderPath,
+//             },
+//             fs.readdirSync(folderPath)
+//         );
+//         res.setHeader("Content-Disposition", `attachment; filename=chscdn.tgz`);
+//         res.setHeader("Content-Type", "application/gzip");
+//         res.sendFile(tarFilePath, (err) => {
+//             if(err){
+//                 res.status(500).json({ error: "Failed to send file", message: err });
+//             }
+//             fs.unlinkSync(tarFilePath);
+//         });
+//     }else{
+//         res.setHeader("Content-Disposition", `attachment; filename=chscdn.zip`);
+//         res.setHeader("Content-Type", "application/zip");
+//         const archive = archiver("zip", { zlib: { level: 9 } });
+//         archive.pipe(res);
+//         archive.directory(folderPath, false);
+//         archive.finalize();
+//     }
+// });
+
 app.get("/install/:package/chscdn", async (req, res) => {
     const package = req.params.package=='pip'?'pip':'npm';
     const folderPath = path.join(__dirname, "packets", package);
@@ -183,23 +218,31 @@ app.get("/install/:package/chscdn", async (req, res) => {
         return res.status(404).json({error: 404, message: "Package not found! Verify the installation link or visit https://chsweb.vercel.app/docs"});
     }
     if(package == 'npm'){
-        const tarFilePath = path.join(__dirname, `${package}.tgz`);
-        await tar.c(
-            {
-                gzip: true,
-                file: tarFilePath,
-                cwd: folderPath,
-            },
-            fs.readdirSync(folderPath)
-        );
-        res.setHeader("Content-Disposition", `attachment; filename=chscdn.tgz`);
-        res.setHeader("Content-Type", "application/gzip");
-        res.sendFile(tarFilePath, (err) => {
-            if(err){
-                res.status(500).json({ error: "Failed to send file", message: err });
-            }
-            fs.unlinkSync(tarFilePath);
-        });
+        const folderPath = path.join(__dirname, "/packets/npm");
+        const packageName = "chscdn";
+        const tarFilePath = path.join("/tmp", `${packageName}.tgz`);
+        try{
+            await tar.c(
+                {
+                    gzip: true,
+                    file: tarFilePath,
+                    cwd: folderPath,
+                },
+                fs.readdirSync(folderPath)
+            );
+            res.setHeader("Content-Disposition", `attachment; filename=${packageName}.tgz`);
+            res.setHeader("Content-Type", "application/gzip");
+            res.sendFile(tarFilePath, (err) => {
+                if(err){
+                    console.error("Send error:", err);
+                    return res.status(500).json({ error: "Failed to send file", message: err.message });
+                }
+                fs.unlink(tarFilePath, () => {});
+            });
+        }catch(err){
+            console.error("Error creating tar:", err);
+            return res.status(500).json({ error: "Tar creation failed", message: err.message });
+        }
     }else{
         res.setHeader("Content-Disposition", `attachment; filename=chscdn.zip`);
         res.setHeader("Content-Type", "application/zip");
@@ -232,10 +275,10 @@ app.get('/key_exchange', async (req, res) => {
 
     const [secret1, public1, secret2, public2] = system.key_pair_genrator(k1, k2);
 
-    let web = {secret: system.Encoder(String(secret1), String(cdn.public_key-59)), public: public2};
+    let web = {secret: system.Encoder(String(secret1), String(cdn.public_key-59)), public: public2, secret1};
     let api = {secret: system.Encoder(String(secret2), String(cdn.public_key-59)), public: public1};
 
-    //await system.return_key_to_api(system.isHosted(req)==true?'https://chsapi.vercel.app':'http://127.0.0.1:8000',api);
+    await system.return_key_to_api(system.isHosted(req)==true?'https://chsapi.vercel.app':'http://127.0.0.1:8000',api);
 
     res.status(200).json(web);
 });
