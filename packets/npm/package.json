@@ -14,10 +14,10 @@
     "homepage": "https://chscdn.vercel.app/",
     "dependencies": {
         "jsonfile": "^6.1.0",
-        "node-fetch": "^3.4.0",
-        "fluent-ffmpeg": "^2.1.2",
+        "node-fetch": "^3.3.2",
+        "fluent-ffmpeg": "^2.1.3",
         "@ffmpeg-installer/ffmpeg": "^1.1.0",
-        "sharp": "^0.33.0"
+        "sharp": "^0.34.2"
     },
     "author": "WHITE LOTUS",
     "license": "CHSCDN"
