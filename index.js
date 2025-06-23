@@ -218,7 +218,7 @@ app.get("/install/:package/chscdn.tgz", async (req, res) => {
         return res.status(404).json({error: 404, message: "Package not found! Verify the installation link or visit https://chsweb.vercel.app/docs"});
     }
     if(package == 'npm'){
-        const folderPath = path.join(__dirname, "/packets/npm");
+        const folderPath = path.join(__dirname, "packets/npm");
         const packageName = "chscdn";
         const tarFilePath = path.join("/tmp", `${packageName}.tgz`);
         try{
@@ -227,6 +227,7 @@ app.get("/install/:package/chscdn.tgz", async (req, res) => {
                     gzip: true,
                     file: tarFilePath,
                     cwd: folderPath,
+                    prefix: 'package/',
                 },
                 fs.readdirSync(folderPath)
             );
