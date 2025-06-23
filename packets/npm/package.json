@@ -1,0 +1,23 @@
+{
+    "name": "chscdn",
+    "version": "1.0",
+    "description": "Cavernous Hoax Scanner's Content Distributive Network utitlity provides version 1",
+    "main": "index.js",
+    "files": [
+        "index.js",
+        "index.test.js"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "https://chscdn.vercel.app/install/npm/chscdn"
+    },
+    "dependencies": {
+        "jsonfile": "^6.1.0",
+        "node-fetch": "^3.4.0",
+        "fluent-ffmpeg": "^2.1.2",
+        "@ffmpeg-installer/ffmpeg": "^1.1.0",
+        "sharp": "^0.33.0"
+    },
+    "author": "WHITE LOTUS",
+    "license": "MIT"
+}
