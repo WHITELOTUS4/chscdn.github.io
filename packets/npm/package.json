@@ -5,13 +5,13 @@
     "main": "index.js",
     "files": [
         "index.js",
-        "index.test.js",
-        "LICENSE"
+        "index.test.js"
     ],
     "repository": {
         "type": "git",
-        "url": "https://chscdn.vercel.app/install/npm/chscdn"
+        "url": "git+https://github.com/WHITELOTUS4/chscdn.github.io.git"
     },
+    "homepage": "https://chscdn.vercel.app/",
     "dependencies": {
         "jsonfile": "^6.1.0",
         "node-fetch": "^3.4.0",
