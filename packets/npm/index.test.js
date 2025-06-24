@@ -8,7 +8,7 @@ const files_structure = [
     'package.json'
 ];
 
-const node_modules_path = String(path.join(require.main.path, '..')).endsWith('node_modules')?path.join(require.main.path, '..'):path.join(path.join(path.join(require.main.path, '..'), '..'), 'node_modules');
+const node_modules_path = String(path.join(require.main.path, '..')).endsWith('node_modules')?path.join(require.main.path, '..'):path.join(require.main.path, 'node_modules');
 
 let missing_pkg = 0, missing_file = 0;
 

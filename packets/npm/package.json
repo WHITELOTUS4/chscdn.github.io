@@ -1,8 +1,9 @@
 {
     "name": "chscdn",
-    "version": "1.0",
-    "description": "Cavernous Hoax Scanner's Content Distributive Network utitlity provides version 1",
+    "version": "1.0.0",
+    "description": "Utility library for the Cavernous Hoax Scanner's Content Distribution Network (CHSCDN), enabling secure media processing, API interaction, and key excehange tools.",
     "main": "index.js",
+    "typings": "types/chscdn.d.ts",
     "files": [
         "index.js",
         "index.test.js"
@@ -11,7 +12,6 @@
         "type": "git",
         "url": "git+https://github.com/WHITELOTUS4/chscdn.github.io.git"
     },
-    "homepage": "https://chscdn.vercel.app/",
     "dependencies": {
         "jsonfile": "^6.1.0",
         "node-fetch": "^3.3.2",
@@ -20,5 +20,6 @@
         "sharp": "^0.32.6"
     },
     "author": "WHITE LOTUS",
-    "license": "CHSCDN"
+    "license": "CHSCDN",
+    "homepage": "https://chscdn.vercel.app/"
 }
