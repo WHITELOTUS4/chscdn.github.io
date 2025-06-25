@@ -17,6 +17,13 @@ declare module 'chscdn' {
         compressBase64Image(base64Image: string, maxSizeKB?: number, minSkipSizeKB?: number): Promise<string>;
         chsAPI(uri: string, token: any): Promise<any>;
         dfd(values: any): Promise<any>;
+        analyzeClassificationSequence(predictions: object[]): object;
+        loosParameterRecover(): object;
+        summarizePrototypeResults(response_tree: object[]): object;
+        imgconverter(values: any): Promise<any>;
+        imgcompressor(values: any): Promise<any>;
+        imggenerator(values: any): String;
+        imgtopdf(values: any): Promise<any>;
         noise_detect(data: any): boolean;
         handle_error(code: any): void;
         error_detect(response: any, permite_to_speck?: string): boolean;

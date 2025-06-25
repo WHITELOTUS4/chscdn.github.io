@@ -411,7 +411,7 @@ CHSCDN.prototype.dfd = async function(values){
     try{
         const mediaType = this.mediaType(values.media);
 
-        if(mediaType === 'image'){
+        if(mediaType === 'image' && this.isValidImage(values.media)){
             const connection = await this.load_media(values.media);
             if(this.noise_detect(connection)) return this.handle_error(connection);
 
@@ -426,8 +426,8 @@ CHSCDN.prototype.dfd = async function(values){
             if(this.noise_detect(response)) return this.handle_error(response);
             return response;
 
-        }else if(mediaType === 'video'){
-            const frames = await this.extractFramesFromBase64Video(values.media); // Already ported
+        }else if(mediaType === 'video' && this.isValidVideo(values.media)){
+            const frames = await this.extractFramesFromBase64Video(values.media);
             let prediction_list = [];
             let responce_tree = [];
             let first_failer = 0;
@@ -435,7 +435,7 @@ CHSCDN.prototype.dfd = async function(values){
             for(let i = 0; i < frames.length; i++){
                 let image_data = frames[i].image;
 
-                image_data = await this.compressBase64Image(image_data); // Already ported
+                image_data = await this.compressBase64Image(image_data);
 
                 try{
                     const connection = await this.load_media(image_data);
@@ -463,15 +463,15 @@ CHSCDN.prototype.dfd = async function(values){
 
                     if(first_failer === 0){
                         first_failer++;
-                        i--; // Retry once
+                        i--;
                     }else{
-                        responce_tree.push(loosParameterRecover()); // assumed defined elsewhere
+                        responce_tree.push(this.loosParameterRecover());
                     }
                 }
             }
 
-            const responce_tree_summarize = summarizePrototypeResults(responce_tree); // assumed defined elsewhere
-            const result = analyzeClassificationSequence(prediction_list); // assumed defined elsewhere
+            const responce_tree_summarize = this.summarizePrototypeResults(responce_tree);
+            const result = this.analyzeClassificationSequence(prediction_list); 
             result.responce_tree = responce_tree_summarize;
 
             const data ={
@@ -496,11 +496,157 @@ CHSCDN.prototype.dfd = async function(values){
             console.error(`Media_Exception: Provided media has not pre-define media type\nPlease provide the valid media type as image or video.\nVisit: https://chsweb.vercel.app/docs?search=extension`);
             return null;
         }
-
     }catch(e){
         console.error("APICallError:\n" + e + "\n\n");
     }
 };
+
+CHSCDN.prototype.analyzeClassificationSequence = function(predictions){
+    if(!predictions || predictions.length === 0){
+        return{ error: "Empty prediction list" };
+    }
+    let resultClass = "Real";
+    let fakeSequences = [];
+    let currentSequence = [];
+    for(let i = 0; i < predictions.length; i++){
+        const item = predictions[i];
+        const label =(item.class || "").toLowerCase();
+        if(label === "fake"){
+            currentSequence.push(item);
+            if(currentSequence.length >= 2){
+                fakeSequences = [...currentSequence];
+            }
+        }else{
+            currentSequence = [];
+        }
+    }
+    if(fakeSequences.length > 0){
+        const totalAccuracy = fakeSequences.reduce((sum, f) => sum + f.accuracy, 0);
+        const avgAccuracy = +(totalAccuracy / fakeSequences.length).toFixed(2);
+        const startTime = fakeSequences[0].second;
+        const endTime = fakeSequences[fakeSequences.length - 1].second;
+        return{
+            class: "Fake",
+            accuracy: avgAccuracy,
+            period: [startTime, endTime]
+        };
+    }
+    const realPreds = predictions.filter(p => (p.class || "").toLowerCase() === "real");
+    if(realPreds.length > 0){
+        const totalAccuracy = realPreds.reduce((sum, p) => sum + p.accuracy, 0);
+        const avgAccuracy = +(totalAccuracy / realPreds.length).toFixed(2);
+        const startTime = realPreds[0].second;
+        const endTime = realPreds[realPreds.length - 1].second;
+        return{
+            class: "Real",
+            accuracy: avgAccuracy,
+            period: [startTime, endTime]
+        };
+    }
+    return{ error: "No valid classification data" };
+}
+
+CHSCDN.prototype.loosParameterRecover = function(){
+    return{
+        "prototype_1":{ "class": "Real", "accuracy": 50 },
+        "prototype_2":{ "class": "Fake", "accuracy": 50 },
+        "prototype_3":{ "class": "Fake", "accuracy": 50 }
+    }
+}
+
+CHSCDN.prototype.summarizePrototypeResults = function(response_tree){
+    const summary = {};
+    response_tree.forEach(entry => {
+        for(let proto in entry){
+            const result = entry[proto];
+            const label = result.class.toLowerCase();
+            const accuracy = result.accuracy;
+            if(!summary[proto]){
+                summary[proto] = {
+                    real:{ count: 0, totalAccuracy: 0 },
+                    fake:{ count: 0, totalAccuracy: 0 }
+                };
+            }
+            if(label === "real"){
+                summary[proto].real.count += 1;
+                summary[proto].real.totalAccuracy += accuracy;
+            }else if(label === "fake"){
+                summary[proto].fake.count += 1;
+                summary[proto].fake.totalAccuracy += accuracy;
+            }
+        }
+    });
+    const resultList = [];
+    for(let proto in summary){
+        const real = summary[proto].real;
+        const fake = summary[proto].fake;
+        let finalClass, finalAccuracy;
+        if(fake.count > real.count){
+            finalClass = "Fake";
+            finalAccuracy = +(fake.totalAccuracy / fake.count).toFixed(2);
+        }else{
+            finalClass = "Real";
+            finalAccuracy = +(real.totalAccuracy / real.count).toFixed(2);
+        }
+
+        resultList[proto] ={
+            class: finalClass,
+            accuracy: finalAccuracy
+        };
+    }
+    return resultList;
+}
+
+CHSCDN.prototype.imgconverter = async function(values){
+	try{
+		const mediaType = this.mediaType(values.media);
+		const validImage = this.isValidImage(values.media);
+		
+        if(mediaType === 'image' && validImage){
+        	const connection = await this.load_media(values.media);
+            if(this.noise_detect(connection)) return this.handle_error(connection);
+
+            const response = await this.chsAPI(`${this.apilink}/api/imageConverter`,{
+                form: values.extension,
+                img: '',
+                load: 'true',
+                key: this.apikey
+            });
+
+            if(this.noise_detect(response)) return this.handle_error(response);
+            return response;
+        }else{
+        	console.error(`Media_Exception: Provided media has not pre-define media type,\nPlease provide the valid media type as image only.\nVisit: https://chsweb.vercel.app/docs?search=extension`);
+            return null;
+        }
+	}catch(e){
+        console.error("APICallError:\n" + e + "\n\n");
+    }
+}
+
+CHSCDN.prototype.imgcompressor = async function(values){
+	try{
+		const mediaType = this.mediaType(values.media);
+		const validImage = this.isValidImage(values.media);
+		
+		if(mediaType === "image" && validImage){
+			
+		}else{
+        	console.error(`Media_Exception: Provided media has not pre-define media type\nPlease provide the valid media type as image only.\nVisit: https://chsweb.vercel.app/docs?search=extension`);
+            return null;
+        }
+	}catch(e){
+        console.error("APICallError:\n" + e + "\n\n");
+    }
+}
+
+CHSCDN.prototype.imggenerator = async function(values){
+	return "This feature is not supported on this version, please wait until the next version of CHSAPI release";
+}
+
+CHSCDN.prototype.imgtopdf = async function(values){
+
+}
 
 CHSCDN.prototype.noise_detect = function(data){
     if(((data * 1) - (data * 1) == 0) && data != true){
