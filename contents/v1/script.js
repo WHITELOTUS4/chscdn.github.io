@@ -354,7 +354,7 @@ CHSCDN.prototype.chsAPI = async function(uri, token){
 
 CHSCDN.prototype.dfd = async function(values){
     try{
-        if(this.mediaType(values.media) == 'image'){
+        if(this.mediaType(values.media) == 'image' && this.isValidImage(values.media)){
             const connection = await this.load_media(values.media);
             if(this.noise_detect(connection)) return this.handle_error(connection);
 
@@ -367,7 +367,7 @@ CHSCDN.prototype.dfd = async function(values){
             });
             if(this.noise_detect(response)) return this.handle_error(response);
             return response;
-        }else if(this.mediaType(values.media) == 'video'){
+        }else if(this.mediaType(values.media) == 'video' && this.isValidVideo(values.media)){
             const frames = await this.extractFramesFromBase64Video(values.media);
             let prediction_list = [];
             let responce_tree = [];
@@ -529,15 +529,50 @@ function summarizePrototypeResults(response_tree){
 }
 
 CHSCDN.prototype.imgconverter = async function(values){
+    try{
+		const mediaType = this.mediaType(values.media);
+		const validImage = this.isValidImage(values.media);
+		
+        if(mediaType === 'image' && validImage){
+        	const connection = await this.load_media(values.media);
+            if(this.noise_detect(connection)) return this.handle_error(connection);
 
+            const response = await this.chsAPI(`${this.apilink}/api/imageConverter`,{
+                form: values.extension,
+                img: '',
+                load: 'true',
+                key: this.apikey
+            });
+
+            if(this.noise_detect(response)) return this.handle_error(response);
+            return response;
+        }else{
+        	console.error(`Media_Exception: Provided media has not pre-define media type\nPlease provid the valid media type as image or video, for more understanding visit ${new URL('https://chsweb.vercel.app/docs?search=extension')}to get extension list\n\n`);
+            return null;
+        }
+	}catch(e){
+        console.error("APICallError:\n" + e + "\n\n");
+    }
 }
 
 CHSCDN.prototype.imgcompressor = async function(values){
-
+    try{
+		const mediaType = this.mediaType(values.media);
+		const validImage = this.isValidImage(values.media);
+		
+		if(mediaType === "image" && validImage){
+			
+		}else{
+        	console.error(`Media_Exception: Provided media has not pre-define media type\nPlease provid the valid media type as image or video, for more understanding visit ${new URL('https://chsweb.vercel.app/docs?search=extension')}to get extension list\n\n`);
+            return null;
+        }
+	}catch(e){
+        console.error("APICallError:\n" + e + "\n\n");
+    }
 }
 
 CHSCDN.prototype.imggenerator = async function(values){
-
+	return "This feature is not supported on this version, please wait until the next version of CHSAPI release";
 }
 
 CHSCDN.prototype.imgtopdf = async function(values){
