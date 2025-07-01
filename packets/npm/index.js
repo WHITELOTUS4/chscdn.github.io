@@ -1,6 +1,7 @@
 require('./index.test.js');
 const fs = require('fs');
 const path = require('path');
+const jsonfile = require('jsonfile');
 let fetch; // node fetch version overload approch
 try{
     fetch = require('node-fetch'); // get as CommonJS (CJS) approch 
@@ -24,6 +25,7 @@ class CHSCDN{
         this.weblink = weblink;
         this.img_extensions = ['.jpg', '.jpeg', '.png', '.peng', '.bmp', '.gif', '.webp', '.svg', '.jpe', '.jfif', '.tar', '.tiff', '.tga'];
         this.vdo_extensions = ['.mp4', '.mov', '.wmv', '.avi', '.avchd', '.flv', '.f4v', '.swf', '.mkv', '.webm', '.html5'];
+        this.error_log = jsonfile.readFileSync('/dist/error_log.json');
 
         // Optional: Check if running offline(Node.js version)
         this.checkInternet();
@@ -111,13 +113,37 @@ CHSCDN.prototype.mediaType = function(base64_str){
     }
 }
 
+CHSCDN.prototype.isValidBase64Media = function(base64String){
+    const regex = /^data:([a-zA-Z]+\/[a-zA-Z0-9\-+.]+);base64,/;
+    const matches = base64String.match(regex);
+
+    if (!matches) return false;
+
+    const mimeType = matches[1].toLowerCase();
+    const ext = '.' + mimeType.split('/')[1];
+
+    if(mimeType.startsWith('image/')){
+        if(!this.img_extensions.includes(ext)) return false;
+        const size = this.base64_size(base64String);
+        if(size < 4 || size > (30 * 1024)) return false;
+        return true;
+    }
+    if(mimeType.startsWith('video/')){
+        if(!this.vdo_extensions.includes(ext)) return false;
+        const size = this.base64_size(base64String);
+        if(size < 20 || size > (400 * 1024)) return false;
+        return true;
+    }
+    return false;
+}
+
 CHSCDN.prototype.image2base64 = async function(filePath){
     return new Promise((resolve, reject) => {
         if(!this.isValidImage(filePath)){
             console.error(
                 `Extension_Exception: Provided media has unsupported image extension.\n` +
                 `Please provide the media with a valid extension. For more understanding visit:\n` +
-                `${new URL('https://chsweb.vercel.app/docs?search=extension')}\n\n`
+                `${new URL('https://chsweb.vercel.app/docs?search=Media%20Format')}\n\n`
             );
             return reject(false);
         }
@@ -159,7 +185,7 @@ CHSCDN.prototype.image_to_base64 = async function(link){
             console.error(
                 `Extension_Exception: Provided media has unsupported image extension.\n` +
                 `Please provide the media with valid extension.\n\nVisit:\n` +
-                `${new URL('https://chsweb.vercel.app/docs?search=extension')}\n\n`
+                `${new URL('https://chsweb.vercel.app/docs?search=Media%20Format')}\n\n`
             );
             return reject(false);
         }
@@ -181,7 +207,7 @@ CHSCDN.prototype.video2base64 = async function(link){
             console.error(
                 `Extension_Exception: Provided media has unsupported video extension\n` +
                 `Please provide a valid extension. Visit:\n` +
-                `${new URL('https://chsweb.vercel.app/docs?search=extension')}\n\n`
+                `${new URL('https://chsweb.vercel.app/docs?search=Media%20Format')}\n\n`
             );
             return reject(false);
         }
@@ -365,7 +391,7 @@ CHSCDN.prototype.load_media = async function(base64String){
                 if(error?.cause?.errno === -4078 || error?.cause?.code === 'ECONNREFUSED'){
                     return false;
                 }
-                console.log(`Error on attempt ${attempts}for part ${index}:`, error);
+                console.log(`Error on attempt ${attempts} for part ${index}:`, error.message, attempts>=3?'\n':'');
             }
         }
         return false;
@@ -409,9 +435,7 @@ CHSCDN.prototype.chsAPI = async function(uri, token){
 
 CHSCDN.prototype.dfd = async function(values){
     try{
-        const mediaType = this.mediaType(values.media);
-
-        if(mediaType === 'image' && this.isValidImage(values.media)){
+        if(this.mediaType(values.media) == 'image' && this.isValidBase64Media(values.media)){
             const connection = await this.load_media(values.media);
             if(this.noise_detect(connection)) return this.handle_error(connection);
 
@@ -426,7 +450,7 @@ CHSCDN.prototype.dfd = async function(values){
             if(this.noise_detect(response)) return this.handle_error(response);
             return response;
 
-        }else if(mediaType === 'video' && this.isValidVideo(values.media)){
+        }else if(this.mediaType(values.media) == 'video' && this.isValidBase64Media(values.media)){
             const frames = await this.extractFramesFromBase64Video(values.media);
             let prediction_list = [];
             let responce_tree = [];
@@ -493,7 +517,7 @@ CHSCDN.prototype.dfd = async function(values){
             return data;
 
         }else{
-            console.error(`Media_Exception: Provided media has not pre-define media type\nPlease provide the valid media type as image or video.\nVisit: https://chsweb.vercel.app/docs?search=extension`);
+            console.error(`Media_Exception: Provided media has not pre-define media type\nPlease provide the valid media type as image or video.\nVisit: https://chsweb.vercel.app/docs?search=Media%20Format`);
             return null;
         }
     }catch(e){
@@ -600,7 +624,7 @@ CHSCDN.prototype.summarizePrototypeResults = function(response_tree){
 CHSCDN.prototype.imgconverter = async function(values){
 	try{
 		const mediaType = this.mediaType(values.media);
-		const validImage = this.isValidImage(values.media);
+		const validImage = this.isValidBase64Media(values.media);
 		
         if(mediaType === 'image' && validImage){
         	const connection = await this.load_media(values.media);
@@ -616,7 +640,7 @@ CHSCDN.prototype.imgconverter = async function(values){
             if(this.noise_detect(response)) return this.handle_error(response);
             return response;
         }else{
-        	console.error(`Media_Exception: Provided media has not pre-define media type,\nPlease provide the valid media type as image only.\nVisit: https://chsweb.vercel.app/docs?search=extension`);
+        	console.error(`Media_Exception: Provided media has not pre-define media type,\nPlease provide the valid media type as image only.\nVisit: https://chsweb.vercel.app/docs?search=Media%20Format`);
             return null;
         }
 	}catch(e){
@@ -627,12 +651,12 @@ CHSCDN.prototype.imgconverter = async function(values){
 CHSCDN.prototype.imgcompressor = async function(values){
 	try{
 		const mediaType = this.mediaType(values.media);
-		const validImage = this.isValidImage(values.media);
+		const validImage = this.isValidBase64Media(values.media);
 		
-		if(mediaType === "image" && validImage){
+        if(mediaType === 'image' && validImage){
 			
 		}else{
-        	console.error(`Media_Exception: Provided media has not pre-define media type\nPlease provide the valid media type as image only.\nVisit: https://chsweb.vercel.app/docs?search=extension`);
+        	console.error(`Media_Exception: Provided media has not pre-define media type\nPlease provide the valid media type as image only.\nVisit: https://chsweb.vercel.app/docs?search=Media%20Format`);
             return null;
         }
 	}catch(e){
@@ -659,8 +683,7 @@ CHSCDN.prototype.noise_detect = function(data){
 CHSCDN.prototype.handle_error = function(code){
     try{
         if(code!=true){
-            console.log(code);
-            return;
+            return this.error_log.find((error) => error.error === code) || null;
         }
     }catch(e){
         console.log("Error found to handle error\n", e);
