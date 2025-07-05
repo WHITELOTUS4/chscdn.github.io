@@ -93,6 +93,15 @@ app.get('/compiler', async (req, res) => {
     }
 });
 
+app.get('/logs', async (req, res) => {
+    try{
+        let logs = jsonfile.readFileSync('./packets/npm/dist/error_log.json');
+        res.status(200).json(logs);
+    }catch(error){
+        res.status(500).json({ error: 'Failed to load configuration', details: error.message });
+    }
+});
+
 // Version 1.0 resource distribution code block
 app.get('/cdn/v1/css/chscdn.min.css', (req, res) => {
     res.status(200).sendFile(__dirname + '/contents/v1/style.css');
@@ -174,42 +183,6 @@ app.get("/download/:version", (req, res) => {
     const version = req.params.version=='latest'?cdn.latest:req.params.version;
     res.status(200).redirect(`/download/zip/${version}`);
 });
-
-// Default install route to the package setup
-
-// app.get("/install/:package/chscdn", async (req, res) => {
-//     const package = req.params.package=='pip'?'pip':'npm';
-//     const folderPath = path.join(__dirname, "packets", package);
-//     if(!fs.existsSync(folderPath)){
-//         return res.status(404).json({error: 404, message: "Package not found! Verify the installation link or visit https://chsweb.vercel.app/docs"});
-//     }
-//     if(package == 'npm'){
-//         const tarFilePath = path.join(__dirname, `${package}.tgz`);
-//         await tar.c(
-//             {
-//                 gzip: true,
-//                 file: tarFilePath,
-//                 cwd: folderPath,
-//             },
-//             fs.readdirSync(folderPath)
-//         );
-//         res.setHeader("Content-Disposition", `attachment; filename=chscdn.tgz`);
-//         res.setHeader("Content-Type", "application/gzip");
-//         res.sendFile(tarFilePath, (err) => {
-//             if(err){
-//                 res.status(500).json({ error: "Failed to send file", message: err });
-//             }
-//             fs.unlinkSync(tarFilePath);
-//         });
-//     }else{
-//         res.setHeader("Content-Disposition", `attachment; filename=chscdn.zip`);
-//         res.setHeader("Content-Type", "application/zip");
-//         const archive = archiver("zip", { zlib: { level: 9 } });
-//         archive.pipe(res);
-//         archive.directory(folderPath, false);
-//         archive.finalize();
-//     }
-// });
 
 app.get("/install/:package/chscdn", async (req, res) => {
     const package = req.params.package=='pip'?'pip':'npm';
