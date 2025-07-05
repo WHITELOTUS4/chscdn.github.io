@@ -1,6 +1,7 @@
 // Variable declaration
 let apilink = "https://chsapi.vercel.app";
 let weblink = "https://chsweb.vercel.app";
+let cdnlink = "https://chscdn.vercel.app";
 
 // Document load and system setups
 document.addEventListener("DOMContentLoaded",() => {
@@ -20,6 +21,7 @@ class CHSCDN{
         this.apilink = apilink;
         this.apikey = '';
         this.weblink = weblink;
+        this.cdnlink = cdnlink;
         this.img_extensions = ['.jpg', '.jpeg', '.png', '.peng', '.bmp', '.gif', '.webp', '.svg', '.jpe', '.jfif', '.tar', '.tiff', '.tga'];
         this.vdo_extensions = ['.mp4', '.mov', '.wmv', '.avi', '.avchd', '.flv', '.f4v', '.swf', '.mkv', '.webm', '.html5'];
         this.error_log = this.getLogs();
@@ -29,13 +31,14 @@ class CHSCDN{
     developermode(){
         apilink = this.apilink = "http://127.0.0.1:8000";
         weblink = this.weblink = "http://127.0.0.1:5000";
+        cdnlink = this.cdnlink = "http://127.0.0.1:8080";
     }
 
     // Fetching logs from CDN server
     async getLogs(){
         if(navigator.onLine){
             try{
-                const response = await fetch(`https://chscdn.vercel.app/logs`, {
+                const response = await fetch(`${cdnlink}/logs`, {
                     method: 'GET'
                 });
                 if(!response.ok){
@@ -624,7 +627,20 @@ CHSCDN.prototype.imgcompressor = async function(values){
 		const validImage = this.isValidBase64Media(values.media);
 		
 		if(mediaType === "image" && validImage){
-			
+			const connection = await this.load_media(values.media);
+            if(this.noise_detect(connection)) return this.handle_error(connection);
+
+            const response = await this.chsAPI(`${this.apilink}/api/imageCompressor`,{
+                height: null,
+                width: null,
+                quality: values.quality || 70,
+                img: '',
+                load: 'true',
+                key: this.apikey
+            });
+
+            if(this.noise_detect(response)) return this.handle_error(response);
+            return response;
 		}else{
         	console.error(`Media_Exception: Provided media has not pre-define media type\nPlease provid the valid media type as image or video, for more understanding visit ${new URL('https://chsweb.vercel.app/docs?search=Media%20Format')} to get extension list\n\n`);
             return null;
@@ -683,6 +699,7 @@ function developermode(key){
     if((key * 1) -(key * 1) == 0){
         apilink = "http://127.0.0.1:8000";
         weblink = "http://127.0.0.1:5000";
+        cdnlink = "http://127.0.0.1:8080";
     }
 }
 
