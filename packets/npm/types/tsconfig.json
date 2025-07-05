@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "typeRoots": ["./", "../node_modules/@types"],
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "strictNullChecks": false,
+    "baseUrl": ".",
+    "skipLibCheck": true
+  },
+  "include": ["*.d.ts"]
+}
