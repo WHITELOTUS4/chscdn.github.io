@@ -1,0 +1,22 @@
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+
+public class test {
+    public static void main(String[] args) {
+        CHSCDN cdn = new CHSCDN();
+
+        try {
+            String base64Image = cdn.image2base64("D:/.vscode/Vs programmes/Df Detector/chscdn/bin/asset1.jpg");
+
+            Map<String, Object> apiParams = new HashMap<>();
+            apiParams.put("task", "deepfake detect");
+            apiParams.put("media", base64Image);
+
+            Object response = cdn.APICaller(apiParams);
+            System.out.println(response);
+        } catch (IOException e) {
+            System.err.println("Error: " + e.getMessage());
+        }
+    }
+}

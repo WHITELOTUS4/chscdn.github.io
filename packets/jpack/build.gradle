@@ -1,0 +1,16 @@
+// may possible that this configuration is not match on your enviroment,
+// Please modify this file as per your need
+plugins {
+    id 'java'
+}
+
+group = 'com.github.whitelotus4'
+version = '1.0'
+
+repositories {
+    maven { url 'https://jitpack.io' }
+}
+
+dependencies {
+    implementation 'com.github.whitelotus4:chscdn:Version 1.0'
+}
