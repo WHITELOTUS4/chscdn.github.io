@@ -185,7 +185,7 @@ app.get("/download/:version", (req, res) => {
 });
 
 app.get("/install/:package/chscdn", async (req, res) => {
-    const package = req.params.package=='pip'?'pip':'npm';
+    const package = ['pip', 'jpack', 'npm'].includes(req.params.package) ? req.params.package : 'npm';
     const folderPath = path.join(__dirname, "packets", package);
     if(!fs.existsSync(folderPath)){
         return res.status(404).json({error: 404, message: "Package not found! Verify the installation link or visit https://chsweb.vercel.app/docs"});
